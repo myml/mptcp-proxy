@@ -1,6 +1,21 @@
 # MPTCP-PROXY
 
 用 go 实现的用户态多路径 tcp 代理，内部对单个 TCP 进行分解，通过多个路径传输后，再进行排序重组。可突破单线路的带宽限制。
+<!-- 
+```plantuml
+@startuml
+(User)
+(Client)
+(Server)
+(Target)
+User -> Client: raw tcp(300Mbps)
+Client -> Server: chunk 1(100Mbps)
+Client -> Server: chunk 2(100Mbps)
+Client -> Server: chunk 3(100Mbps)
+Server -> Target: raw tcp(300Mbps)
+@enduml
+``` -->
+![plantuml](p.svg)
 
 ## 使用
 

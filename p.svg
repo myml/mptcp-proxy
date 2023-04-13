@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="81px" preserveAspectRatio="none" style="width:793px;height:81px;" version="1.1" viewBox="0 0 793 81" width="793px" zoomAndPan="magnify"><defs><filter height="300%" id="f1abwajm2ogamd" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><ellipse cx="40.1191" cy="49.5919" fill="#FEFECE" filter="url(#f1abwajm2ogamd)" rx="34.1191" ry="14.526" style="stroke:#A80036;stroke-width:1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="32" x="23.6725" y="52.604">User</text><ellipse cx="264.1869" cy="49.6293" fill="#FEFECE" filter="url(#f1abwajm2ogamd)" rx="39.1869" ry="14.5634" style="stroke:#A80036;stroke-width:1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="39" x="242.5666" y="53.1535">Client</text><ellipse cx="500.8991" cy="49.6772" fill="#FEFECE" filter="url(#f1abwajm2ogamd)" rx="42.8991" ry="14.6113" style="stroke:#A80036;stroke-width:1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="44" x="475.8991" y="53.4247">Server</text><ellipse cx="738.1452" cy="49.6868" fill="#FEFECE" filter="url(#f1abwajm2ogamd)" rx="43.6452" ry="14.6209" style="stroke:#A80036;stroke-width:1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="45" x="712.6452" y="53.4343">Target</text><!--MD5=[b9014cebc313a16442615e671f7ea802]
+link User to Client--><path d="M74.0208,49.5659 C112.9492,49.5659 176.8288,49.5659 219.6352,49.5659 " fill="none" id="User-to-Client" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="224.7479,49.5659,215.7479,45.5659,219.7479,49.5659,215.7479,53.5659,224.7479,49.5659" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="114" x="92.5" y="42.6328">raw tcp(300Mbps)</text><!--MD5=[7bd1f44cd56d22116abde01a801fcb89]
+link Client to Server--><path d="M303.1357,49.5659 C344.1525,49.5659 408.6473,49.5659 452.7796,49.5659 " fill="none" id="Client-to-Server" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="457.7889,49.5659,448.7889,45.5659,452.7889,49.5659,448.7889,53.5659,457.7889,49.5659" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="118" x="321.5" y="42.6328">chunk 1(100Mbps)</text><!--MD5=[7bd1f44cd56d22116abde01a801fcb89]
+link Client to Server--><path d="M289.3829,60.6202 C298.9454,64.2291 310.0396,67.7691 320.5,69.5659 C346.7818,74.0803 414.1724,73.8048 440.5,69.5659 C449.8075,68.0673 459.6225,65.3502 468.5757,62.3919 " fill="none" id="Client-to-Server-1" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="473.4524,60.7298,463.6432,59.8473,468.7198,62.3429,466.2241,67.4195,473.4524,60.7298" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="118" x="321.5" y="65.6328">chunk 2(100Mbps)</text><!--MD5=[7bd1f44cd56d22116abde01a801fcb89]
+link Client to Server--><path d="M289.3829,38.5115 C298.9454,34.9027 310.0396,31.3627 320.5,29.5659 C346.7818,25.0515 414.1724,25.327 440.5,29.5659 C449.8075,31.0644 459.6225,33.7815 468.5757,36.7399 " fill="none" id="Client-to-Server-2" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="473.4524,38.402,466.2242,31.7122,468.7198,36.7889,463.6432,39.2844,473.4524,38.402" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="118" x="321.5" y="19.6328">chunk 3(100Mbps)</text><!--MD5=[bd266e21731d86a90ded928746626188]
+link Server to Target--><path d="M544.1939,49.5659 C585.121,49.5659 646.5115,49.5659 689.1918,49.5659 " fill="none" id="Server-to-Target" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="694.3013,49.5659,685.3013,45.5659,689.3013,49.5659,685.3013,53.5659,694.3013,49.5659" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="114" x="562.25" y="42.6328">raw tcp(300Mbps)</text><!--MD5=[769d981126c87775237fe86df82e9735]
+@startuml
+(User)
+(Client)
+(Server)
+(Target)
+User -> Client: raw tcp(300Mbps)
+Client -> Server: chunk 1(100Mbps)
+Client -> Server: chunk 2(100Mbps)
+Client -> Server: chunk 3(100Mbps)
+Server -> Target: raw tcp(300Mbps)
+@enduml
+
+PlantUML version 1.2021.00(Sun Jan 10 10:25:05 UTC 2021)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Default Encoding: UTF-8
+Language: en
+Country: null
+--></g></svg>
