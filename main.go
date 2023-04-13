@@ -91,11 +91,17 @@ func runServer(listen string, remote string) {
 func biCopy(a, b net.Conn) {
 	closeCh := make(chan bool, 2)
 	go func() {
-		io.Copy(a, b)
+		_, err := io.Copy(a, b)
+		if err != nil {
+			log.Println(err)
+		}
 		closeCh <- true
 	}()
 	go func() {
-		io.Copy(b, a)
+		_, err := io.Copy(b, a)
+		if err != nil {
+			log.Println(err)
+		}
 		closeCh <- true
 	}()
 	<-closeCh
