@@ -39,14 +39,15 @@ func runClient(listen string, paths []string) {
 		log.Fatal(err)
 	}
 	log.Println("listen tcp at", listen)
-	for {
-		conn, err := l.Accept()
-		if err != nil {
-			log.Fatal(err)
-		}
-		go func() {
+
+	type Dial struct {
+		cancel func()
+		conn   net.Conn
+	}
+	preDialPool := make(chan Dial)
+	go func() {
+		for {
 			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
 			var ds []multipath.Dialer
 			for i := range paths {
 				ds = append(ds, newOutboundDialer(paths[i], fmt.Sprintf("no.%d", i)))
@@ -55,7 +56,18 @@ func runClient(listen string, paths []string) {
 			if err != nil {
 				log.Fatal(err)
 			}
-			biCopy(conn, remote)
+			preDialPool <- Dial{cancel: cancel, conn: remote}
+		}
+	}()
+	for {
+		conn, err := l.Accept()
+		if err != nil {
+			log.Fatal(err)
+		}
+		go func() {
+			dial := <-preDialPool
+			biCopy(conn, dial.conn)
+			dial.cancel()
 		}()
 	}
 }
@@ -73,16 +85,25 @@ func runServer(listen string, remote string) {
 	ml := multipath.NewListener(listeners, trackers)
 
 	log.Println("listen mptcp at", listen)
+
+	preConnPool := make(chan net.Conn)
+	go func() {
+		for {
+			remote, err := net.Dial("tcp", remote)
+			if err != nil {
+				log.Fatal(err)
+			}
+			preConnPool <- remote
+		}
+	}()
+
 	for {
 		conn, err := ml.Accept()
 		if err != nil {
 			log.Fatal(err)
 		}
 		go func() {
-			remote, err := net.Dial("tcp", remote)
-			if err != nil {
-				log.Fatal(err)
-			}
+			remote := <-preConnPool
 			biCopy(conn, remote)
 		}()
 	}
