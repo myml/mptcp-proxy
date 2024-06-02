@@ -2,7 +2,7 @@ module mptcp-proxy
 
 go 1.19
 
-require github.com/getlantern/multipath v0.0.0-20220920195041-55195f38df73
+require github.com/getlantern/multipath v0.0.0-20230510135141-717ed305ef50
 
 require (
 	github.com/dustin/go-humanize v1.0.0 // indirect
@@ -21,5 +21,3 @@ require (
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.19.1 // indirect
 )
-
-replace github.com/getlantern/multipath v0.0.0-20220920195041-55195f38df73 => github.com/myml/multipath v0.0.0-20230414014404-9db1bc47afe0

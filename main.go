@@ -8,11 +8,14 @@ import (
 	"log"
 	"net"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/getlantern/multipath"
 )
 
 func main() {
+	log.SetFlags(log.Lshortfile | log.LstdFlags)
 	var server string
 	var client string
 	var paths string
@@ -54,7 +57,9 @@ func runClient(listen string, paths []string) {
 			}
 			remote, err := multipath.NewDialer("mptcp", ds).DialContext(ctx)
 			if err != nil {
-				log.Fatal(err)
+				log.Println(err)
+				time.Sleep(time.Second)
+				continue
 			}
 			preDialPool <- Dial{cancel: cancel, conn: remote}
 		}
@@ -64,8 +69,10 @@ func runClient(listen string, paths []string) {
 		if err != nil {
 			log.Fatal(err)
 		}
+		log.Println("new conn", conn.RemoteAddr())
 		go func() {
 			dial := <-preDialPool
+			log.Println("bicopy")
 			biCopy(conn, dial.conn)
 			dial.cancel()
 		}()
@@ -102,6 +109,7 @@ func runServer(listen string, remote string) {
 		if err != nil {
 			log.Fatal(err)
 		}
+		log.Println("new conn", conn.RemoteAddr())
 		go func() {
 			remote := <-preConnPool
 			biCopy(conn, remote)
@@ -110,23 +118,26 @@ func runServer(listen string, remote string) {
 }
 
 func biCopy(a, b net.Conn) {
-	closeCh := make(chan bool, 2)
+	var wg sync.WaitGroup
+	wg.Add(2)
 	go func() {
+		log.Println("copy")
 		_, err := io.Copy(a, b)
 		if err != nil {
 			log.Println(err)
 		}
-		closeCh <- true
+		wg.Done()
+		b.Close()
 	}()
 	go func() {
+		log.Println("copy")
 		_, err := io.Copy(b, a)
 		if err != nil {
 			log.Println(err)
 		}
-		closeCh <- true
+		wg.Done()
+		a.Close()
 	}()
-	<-closeCh
-	a.Close()
-	b.Close()
-	close(closeCh)
+	wg.Wait()
+	log.Println("exit")
 }
