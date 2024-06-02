@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net"
 )
@@ -17,6 +16,7 @@ func newOutboundDialer(inputRemoteAddr string, label string) *targetedDailer {
 	td := &targetedDailer{
 		localDialer: net.Dialer{},
 		remoteAddr:  inputRemoteAddr,
+		label:       label,
 	}
 	return td
 }
@@ -31,5 +31,5 @@ func (td *targetedDailer) DialContext(ctx context.Context) (net.Conn, error) {
 }
 
 func (td *targetedDailer) Label() string {
-	return fmt.Sprintf("%s|%s", td.label, td.remoteAddr)
+	return td.label
 }

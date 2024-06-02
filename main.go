@@ -5,13 +5,17 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net"
+	"os"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/getlantern/golog"
 	"github.com/getlantern/multipath"
+	"github.com/xtaci/smux"
 )
 
 func main() {
@@ -25,6 +29,7 @@ func main() {
 	flag.StringVar(&paths, "p", "", "client mode, server addrs. e.g. 127.0.0.1:12345,192.168.0.2:12345")
 	flag.StringVar(&remote, "r", "", "server mode, proxy to remote server. e.g. 127.0.0.1:5001")
 	flag.Parse()
+
 	if len(client) > 0 {
 		runClient(client, strings.Split(paths, ","))
 		return
@@ -47,21 +52,35 @@ func runClient(listen string, paths []string) {
 		cancel func()
 		conn   net.Conn
 	}
+	golog.SetOutputs(os.Stderr, ioutil.Discard)
 	preDialPool := make(chan Dial)
 	go func() {
 		for {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, _ := context.WithCancel(context.Background())
 			var ds []multipath.Dialer
 			for i := range paths {
 				ds = append(ds, newOutboundDialer(paths[i], fmt.Sprintf("no.%d", i)))
 			}
-			remote, err := multipath.NewDialer("mptcp", ds).DialContext(ctx)
+			conn, err := multipath.NewDialer("mptcp", ds).DialContext(ctx)
 			if err != nil {
 				log.Println(err)
 				time.Sleep(time.Second)
 				continue
 			}
-			preDialPool <- Dial{cancel: cancel, conn: remote}
+			session, err := smux.Client(conn, nil)
+			if err != nil {
+				log.Fatal(err)
+			}
+			for {
+				stream, err := session.OpenStream()
+				if err != nil {
+					log.Println(err)
+					conn.Close()
+					break
+				}
+				log.Println("new stream")
+				preDialPool <- Dial{cancel: func() {}, conn: stream}
+			}
 		}
 	}()
 	for {
@@ -72,8 +91,7 @@ func runClient(listen string, paths []string) {
 		log.Println("new conn", conn.RemoteAddr())
 		go func() {
 			dial := <-preDialPool
-			log.Println("bicopy")
-			biCopy(conn, dial.conn)
+			biCopy(conn.RemoteAddr().String(), conn, dial.conn)
 			dial.cancel()
 		}()
 	}
@@ -109,35 +127,45 @@ func runServer(listen string, remote string) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Println("new conn", conn.RemoteAddr())
-		go func() {
-			remote := <-preConnPool
-			biCopy(conn, remote)
-		}()
+		session, err := smux.Server(conn, nil)
+		if err != nil {
+			log.Fatal(err)
+		}
+		for {
+			stream, err := session.AcceptStream()
+			if err != nil {
+				log.Println(err)
+				conn.Close()
+				break
+			}
+			log.Println("new conn", conn.RemoteAddr())
+			go func() {
+				remote := <-preConnPool
+				biCopy(conn.RemoteAddr().String(), stream, remote)
+			}()
+		}
 	}
 }
 
-func biCopy(a, b net.Conn) {
+func biCopy(name string, a, b net.Conn) {
 	var wg sync.WaitGroup
 	wg.Add(2)
 	go func() {
-		log.Println("copy")
 		_, err := io.Copy(a, b)
-		if err != nil {
-			log.Println(err)
-		}
-		wg.Done()
-		b.Close()
-	}()
-	go func() {
-		log.Println("copy")
-		_, err := io.Copy(b, a)
 		if err != nil {
 			log.Println(err)
 		}
 		wg.Done()
 		a.Close()
 	}()
+	go func() {
+		_, err := io.Copy(b, a)
+		if err != nil {
+			log.Println(err)
+		}
+		wg.Done()
+		b.Close()
+	}()
 	wg.Wait()
-	log.Println("exit")
+	log.Println(name, "close")
 }
