@@ -83,24 +83,25 @@ func clientHandle(conn net.Conn, servers []string, service string) {
 			}
 		}
 	}()
-	go func() {
-		defer conn.Close()
-		for {
-			server := servers[rand.Intn(len(servers))]
-			resp, err := http.Get(server + "/r?id=" + id)
-			if err != nil {
-				log.Println("send data to server", err)
-				return
+	for i := range servers {
+		server := servers[i]
+		go func() {
+			for {
+				resp, err := http.Get(server + "/r?id=" + id)
+				if err != nil {
+					log.Println("send data to server", err)
+					return
+				}
+				if resp.StatusCode != http.StatusOK {
+					return
+				}
+				_, err = io.Copy(conn, resp.Body)
+				if err != nil {
+					log.Println("read data from server", err)
+					return
+				}
 			}
-			if resp.StatusCode != http.StatusOK {
-				return
-			}
-			_, err = io.Copy(conn, resp.Body)
-			if err != nil {
-				log.Println("read data from server", err)
-				return
-			}
-		}
-	}()
+		}()
+	}
 	wg.Wait()
 }

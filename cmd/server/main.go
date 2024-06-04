@@ -13,12 +13,16 @@ import (
 )
 
 type MutexConn struct {
-	readLock     sync.Mutex
-	writeLock    sync.Mutex
-	conn         net.Conn
-	readerBuffer [1024 * 1024]byte
+	readChan  chan []byte
+	writeLock sync.Mutex
+	conn      net.Conn
 }
 
+var buffPool = sync.Pool{
+	New: func() any {
+		return make([]byte, 1024*1024)
+	},
+}
 var serviceMap sync.Map
 
 func main() {
@@ -36,9 +40,22 @@ func main() {
 			return
 		}
 		id := uuid.New().String()
-		mc := MutexConn{conn: conn}
+		mc := MutexConn{conn: conn, readChan: make(chan []byte, 10)}
 		serviceMap.Store(id, &mc)
 		ctx.WriteString(id)
+
+		go func() {
+			defer conn.Close()
+			defer serviceMap.Delete(id)
+			for {
+				readerBuffer := buffPool.Get().([]byte)
+				n, err := conn.Read(readerBuffer)
+				if err != nil {
+					return
+				}
+				mc.readChan <- readerBuffer[:n]
+			}
+		}()
 	})
 	router.GET("/r", func(ctx *fasthttp.RequestCtx) {
 		id := string(ctx.QueryArgs().Peek("id"))
@@ -49,15 +66,9 @@ func main() {
 			return
 		}
 		mc := v.(*MutexConn)
-		mc.readLock.Lock()
-		defer mc.readLock.Unlock()
-		n, err := mc.conn.Read(mc.readerBuffer[:])
-		if err != nil {
-			log.Println("read data from service", err)
-			ctx.SetStatusCode(http.StatusInternalServerError)
-			return
-		}
-		_, err = ctx.Write(mc.readerBuffer[:n])
+		data := <-mc.readChan
+		_, err := ctx.Write(data)
+		buffPool.Put(data)
 		if err != nil {
 			log.Println("write data to client", err)
 			return
