@@ -18,18 +18,22 @@ type MutexConn struct {
 	conn      net.Conn
 }
 
-var buffPool = sync.Pool{
-	New: func() any {
-		return make([]byte, 1024*1024)
-	},
-}
 var serviceMap sync.Map
 
 func main() {
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
 	var listen string
+	var chanlen, bufferSize int64
 	flag.StringVar(&listen, "l", ":11111", "listen addr, e.g. 127.0.0.1:11111")
+	flag.Int64Var(&chanlen, "chanlen", 100, "reader channel size")
+	flag.Int64Var(&bufferSize, "buffsize", 1024*1024, "rader buffer size")
 	flag.Parse()
+
+	var buffPool = sync.Pool{
+		New: func() any {
+			return make([]byte, 1024*1024)
+		},
+	}
 
 	router := fasthttprouter.New()
 	router.POST("/new", func(ctx *fasthttp.RequestCtx) {
@@ -40,7 +44,7 @@ func main() {
 			return
 		}
 		id := uuid.New().String()
-		mc := MutexConn{conn: conn, readChan: make(chan []byte, 10)}
+		mc := MutexConn{conn: conn, readChan: make(chan []byte, chanlen)}
 		serviceMap.Store(id, &mc)
 		ctx.WriteString(id)
 

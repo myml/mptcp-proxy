@@ -39,7 +39,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Println("new client")
+		log.Println("new client", conn.RemoteAddr())
 		go clientHandle(conn, servers, service)
 	}
 }
@@ -62,7 +62,8 @@ func clientHandle(conn net.Conn, servers []string, service string) {
 	log.Println("get id", id)
 
 	var wg sync.WaitGroup
-	wg.Add(2)
+
+	wg.Add(1)
 	go func() {
 		var readerBuffer [1024 * 1024]byte
 		for {
@@ -85,6 +86,7 @@ func clientHandle(conn net.Conn, servers []string, service string) {
 	}()
 	for i := range servers {
 		server := servers[i]
+		wg.Add(1)
 		go func() {
 			for {
 				resp, err := http.Get(server + "/r?id=" + id)
@@ -97,11 +99,13 @@ func clientHandle(conn net.Conn, servers []string, service string) {
 				}
 				_, err = io.Copy(conn, resp.Body)
 				if err != nil {
-					log.Println("read data from server", err)
+					log.Println("read data from server", server, err)
 					return
 				}
 			}
 		}()
 	}
 	wg.Wait()
+
+	log.Println("client exit", conn.RemoteAddr())
 }
